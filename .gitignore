@@ -1,0 +1,17 @@
+# Python
+__pycache__
+*.pyc
+.project
+.pydevproject
+
+# Temporary files
+*~
+
+# Apple
+.DS_Store
+
+# sensitive
+settings.py
+
+# output
+*.conf
