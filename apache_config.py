@@ -62,6 +62,12 @@ if __name__ == '__main__':
     # Could be moved to a text file
     apache_template = '''
 <VirtualHost *:80>
+    # MIME-Type sniffing
+    Header set X-Content-Type-Options: nosniff
+
+    # for Require host
+    SetEnvIfNoCase Host <escaped_url> VALID_HOST
+
     ServerName <url>
     <server_alias_opt>ServerAlias <server_alias>
     ServerAdmin <email>
@@ -72,10 +78,16 @@ if __name__ == '__main__':
     Alias /static/ /home/<user>/public_html/<url>/<git_dir>/static/
 
     <Directory /home/<user>/public_html/<url>/<git_dir>/static>
-        Require all granted
+        <RequireAll>
+            Require all granted
+            Require env VALID_HOST
+        </RequireAll>
     </Directory>
     <Directory /home/<user>/public_html/<url>/<git_dir>/media>
-        Require all granted
+        <RequireAll>
+            Require all granted
+            Require env VALID_HOST
+        </RequireAll>
     </Directory>
 
     WSGIScriptAlias / /home/<user>/public_html/<url>/<git_dir>/<proj_dir>/wsgi.py
@@ -84,7 +96,10 @@ if __name__ == '__main__':
 
     <Directory /home/<user>/public_html/<url>/<git_dir>/<proj_dir>>
         <Files wsgi.py>
-            Require all granted
+            <RequireAll>
+                Require all granted
+                Require env VALID_HOST
+            </RequireAll>
         </Files>
     </Directory>
 </Virtualhost>
@@ -122,6 +137,8 @@ if __name__ == '__main__':
         '<venv>', venv
     ).replace(
         '<python_ver>', python_ver
+    ).replace(
+        '<escaped_url>', url.replace('.', '\\.')
     )
 
     if ssl == 'y' or ssl == 'yes':
