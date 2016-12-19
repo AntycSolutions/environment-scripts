@@ -91,7 +91,7 @@ if __name__ == '__main__':
     </Directory>
 
     WSGIScriptAlias / /home/<user>/public_html/<url>/<git_dir>/<proj_dir>/wsgi.py
-    WSGIDaemonProcess <url> python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages
+    WSGIDaemonProcess <url> <wsgi_daemon_process>
     WSGIProcessGroup <url>
 
     <Directory /home/<user>/public_html/<url>/<git_dir>/<proj_dir>>
@@ -103,6 +103,14 @@ if __name__ == '__main__':
         </Files>
     </Directory>
 </Virtualhost>
+'''  # noqa E501
+
+    python34_wsgi_daemon_process_template = '''
+	python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages
+'''  # noqa E501
+
+    python35_wsgi_daemon_process_template = '''
+	python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>
 '''  # noqa E501
 
     if server_alias:
@@ -122,6 +130,15 @@ if __name__ == '__main__':
         )
     else:
         apache_template = apache_template.replace('<favicon_opt>', '#')
+
+    if float(python_ver) >= 3.5:
+        apache_template = apache_template.reaplce(
+            '<wsgi_daemon_process>', python35_wsgi_daemon_process_template
+        )
+    else:
+        apache_template = apache_template.reaplce(
+            '<wsgi_daemon_process>', python34_wsgi_daemon_process_template
+        )
 
     apache_template = apache_template.replace(
         '<url>', url
