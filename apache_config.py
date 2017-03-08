@@ -60,7 +60,7 @@ if __name__ == '__main__':
     ssl = input().lower()
 
     # Could be moved to a text file
-    apache_template = '''
+    apache_template = '''\
 <VirtualHost *:80>
     # MIME-Type sniffing
     Header set X-Content-Type-Options: nosniff
@@ -105,12 +105,12 @@ if __name__ == '__main__':
 </Virtualhost>
 '''  # noqa E501
 
-    python34_wsgi_daemon_process_template = '''
-	python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages
+    python34_wsgi_daemon_process_template = '''\
+python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages
 '''  # noqa E501
 
-    python35_wsgi_daemon_process_template = '''
-	python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>
+    python35_wsgi_daemon_process_template = '''\
+python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>
 '''  # noqa E501
 
     if server_alias:
@@ -132,11 +132,11 @@ if __name__ == '__main__':
         apache_template = apache_template.replace('<favicon_opt>', '#')
 
     if float(python_ver) >= 3.5:
-        apache_template = apache_template.reaplce(
+        apache_template = apache_template.replace(
             '<wsgi_daemon_process>', python35_wsgi_daemon_process_template
         )
     else:
-        apache_template = apache_template.reaplce(
+        apache_template = apache_template.replace(
             '<wsgi_daemon_process>', python34_wsgi_daemon_process_template
         )
 
