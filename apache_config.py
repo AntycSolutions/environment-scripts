@@ -1,4 +1,6 @@
-# generates an apache config file
+# generates an apache site config file
+
+from distutils import version
 
 try:
     import settings
@@ -41,7 +43,7 @@ if __name__ == '__main__':
     print('favicon (leave blank to disable): ', end='')
     favicon = input()
 
-    default_python_ver = '3.4'
+    default_python_ver = '3.5'
     print('python_ver (default is ' + default_python_ver + '): ', end='')
     python_ver = input()
     if not python_ver:
@@ -58,6 +60,31 @@ if __name__ == '__main__':
 
     print('ssl (enter [y]es or leave blank to disable): ', end='')
     ssl = input().lower()
+
+    if ssl == 'y' or ssl == 'yes':
+        print('\n* Required ssl args *\n')
+
+        print('ssl_certificate_file: ', end='')
+        ssl_certificate_file = input()
+        if not ssl_certificate_file:
+            exit('Enter a ssl_certificate_file')
+
+        print('ssl_certificate_key_file: ', end='')
+        ssl_certificate_key_file = input()
+        if not ssl_certificate_key_file:
+            exit('Enter a ssl_certificate_key_file')
+
+        print('\n* Optional ssl args (leave blank to use defaults) *\n')
+
+        if server_alias:
+            msg = 'default is ' + server_alias
+        else:
+            msg = 'leave blank to disable'
+        print('server_alias_https (' + msg + '): ', end='')
+        server_alias_https = input()
+
+        print('hsts_domains (leave blank to disable): ', end='')
+        hsts_domains = input()
 
     # Could be moved to a text file
     apache_template = '''\
@@ -105,42 +132,158 @@ if __name__ == '__main__':
 </Virtualhost>
 '''  # noqa E501
 
+    apache_ssl_template = apache_template.replace('<VirtualHost *:80>', '''\
+<VirtualHost *:80>
+    ServerName <url>
+    <server_alias_http_opt>ServerAlias <server_alias_http>
+    ServerAdmin <email>
+
+    # Do not use permanent!
+    Redirect / https://<url>/
+</VirtualHost>
+
+<VirtualHost *:443>
+    # SSL
+    SSLEngine on
+
+    SSLCertificateFile <ssl_certificate_file>
+    SSLCertificateKeyFile <ssl_certificate_key_file>
+
+    # HSTS
+    Header always set Strict-Transport-Security "max-age=15768000"
+
+    # Wildcard subdomain redirect
+    RewriteEngine On
+    RewriteCond %{HTTP_HOST} ^(.*)\.<escaped_url> <or>
+    <escaped_url_rewrite_conds>
+    RewriteCond %{HTTPS} =on
+    # Do not use permanent!
+    RewriteRule (.*) https://<url>/ [R,L]
+
+    # Content Security Policy
+    <hsts_opt>Header set Content-Security-Policy "script-src 'self' <hsts_domains>
+'''  # noqa E501
+)
+
     python34_wsgi_daemon_process_template = '''\
-python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages
+python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages\
 '''  # noqa E501
 
     python35_wsgi_daemon_process_template = '''\
-python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>
+python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>\
 '''  # noqa E501
 
-    if server_alias:
-        apache_template = apache_template.replace(
-            '<server_alias>', server_alias
+    if ssl == 'y' or ssl == 'yes':
+        conf = apache_ssl_template
+
+        conf = conf.replace(
+            '<ssl_certificate_file>', ssl_certificate_file
         ).replace(
-            '<server_alias_opt>', ''
+            '<ssl_certificate_key_file>', ssl_certificate_key_file
         )
+
+        if hsts_domains:
+            conf = conf.replace(
+                '<hsts_domains>', hsts_domains
+            ).replace(
+                '<hsts_opt>', ''
+            )
+        else:
+            conf = conf.replace('<hsts_opt>', '#')
+
+        if server_alias:
+            escaped_url_rewrite_conds = ''
+            server_aliases = server_alias.split()
+            server_aliases_len = len(server_aliases) - 1
+            counter = 0
+            skipped = 0
+            for alias in server_aliases:
+                if alias.endswith(url):
+                    skipped += 1
+                    continue
+
+                escaped_url_rewrite_cond = (
+                    'RewriteCond %{{HTTP_HOST}} ^{}'.format(
+                        alias.replace('.', '\.')
+                    )
+                )
+                if counter > 0:
+                    escaped_url_rewrite_cond = '    {}'.format(
+                        escaped_url_rewrite_cond
+                    )
+                if counter < (server_aliases_len - skipped):
+                    escaped_url_rewrite_cond += ' [OR]\n'
+
+                counter += 1
+                escaped_url_rewrite_conds += escaped_url_rewrite_cond
+
+            if counter > 0:
+                conf = conf.replace(
+                    '<or>', '[OR]'
+                ).replace(
+                    '<escaped_url_rewrite_conds>', escaped_url_rewrite_conds
+                )
+            else:
+                conf = conf.replace(
+                    ' <or>', ''
+                ).replace(
+                    '<escaped_url_rewrite_conds>', '#'
+                )
+        else:
+            conf = conf.replace(
+                ' <or>', ''
+            ).replace(
+                '<escaped_url_rewrite_conds>', '#'
+            )
+
+        if server_alias:
+            conf = conf.replace(
+                '<server_alias_http>', server_alias
+            ).replace(
+                '<server_alias_http_opt>', ''
+            )
+        else:
+            conf = conf.replace('<server_alias_http_opt>', '#')
+
+        if server_alias_https or server_alias:
+            conf = conf.replace(
+                '<server_alias>', server_alias_https or server_alias
+            ).replace(
+                '<server_alias_opt>', ''
+            )
+        else:
+            conf = conf.replace('<server_alias_opt>', '#')
     else:
-        apache_template = apache_template.replace('<server_alias_opt>', '#')
+        conf = apache_template
+
+        if server_alias:
+            conf = conf.replace(
+                '<server_alias>', server_alias
+            ).replace(
+                '<server_alias_opt>', ''
+            )
+        else:
+            conf = conf.replace('<server_alias_opt>', '#')
 
     if favicon:
-        apache_template = apache_template.replace(
+        conf = conf.replace(
             '<favicon>', favicon
         ).replace(
             '<favicon_opt>', ''
         )
     else:
-        apache_template = apache_template.replace('<favicon_opt>', '#')
+        conf = conf.replace('<favicon_opt>', '#')
 
-    if float(python_ver) >= 3.5:
-        apache_template = apache_template.replace(
+    if version.LooseVersion(python_ver) >= version.LooseVersion('3.5'):
+        conf = conf.replace(
             '<wsgi_daemon_process>', python35_wsgi_daemon_process_template
         )
     else:
-        apache_template = apache_template.replace(
+        conf = conf.replace(
             '<wsgi_daemon_process>', python34_wsgi_daemon_process_template
         )
 
-    apache_template = apache_template.replace(
+    conf = conf.replace(
         '<url>', url
     ).replace(
         '<email>', email
@@ -155,15 +298,14 @@ python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/pu
     ).replace(
         '<python_ver>', python_ver
     ).replace(
-        '<escaped_url>', url.replace('.', '\\.')
+        '<escaped_url>', url.replace('.', '\.')
     )
 
-    if ssl == 'y' or ssl == 'yes':
-        exit('ssl not implemented')
+    # print(conf)  # debug
 
-    # print(apache_template)
     filename = url + '.conf'
     f = open(filename, 'w')
-    f.write(apache_template)
+    f.write(conf)
     f.close()
-    print('Created file: ' + filename)
+
+    print('\nCreated file: ' + filename)
