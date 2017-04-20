@@ -24,15 +24,39 @@ if __name__ == '__main__':
 
     print('\n* Optional args (leave blank to use defaults) *\n')
 
-    print('proj_dir (default is ' + git_dir + '): ', end='')
+    print(
+        'proj_dir (containing Django proj) '
+        '(leave blank if your git_dir contains your Django proj): ',
+        end=''
+    )
     proj_dir = input()
-    if not proj_dir:
-        proj_dir = git_dir
 
-    print('venv (default is venv_' + proj_dir + '): ', end='')
+    print(
+        (
+            'wsgi_dir (containing wsgi.py) (default is ' +
+            (proj_dir or git_dir) +
+            '): '
+        ),
+        end=''
+    )
+    wsgi_dir = input()
+    if not wsgi_dir:
+        wsgi_dir = proj_dir or git_dir
+
+    # we can't put the / in the template because we need to support blank value
+    if proj_dir:
+        proj_dir = '/' + proj_dir
+
+    default_url_dir = 'public_html'
+    print('url_dir (default is ' + default_url_dir + '): ', end='')
+    url_dir = input()
+    if not url_dir:
+        url_dir = default_url_dir
+
+    print('venv (default is venv_' + wsgi_dir + '): ', end='')
     venv = input()
     if not venv:
-        venv = 'venv_' + proj_dir
+        venv = 'venv_' + wsgi_dir
 
     default_user = settings.USER
     print('user (default is ' + default_user + '): ', end='')
@@ -64,12 +88,12 @@ if __name__ == '__main__':
     if ssl == 'y' or ssl == 'yes':
         print('\n* Required ssl args *\n')
 
-        print('ssl_certificate_file: ', end='')
+        print('ssl_certificate_file (full path): ', end='')
         ssl_certificate_file = input()
         if not ssl_certificate_file:
             exit('Enter a ssl_certificate_file')
 
-        print('ssl_certificate_key_file: ', end='')
+        print('ssl_certificate_key_file (full path): ', end='')
         ssl_certificate_key_file = input()
         if not ssl_certificate_key_file:
             exit('Enter a ssl_certificate_key_file')
@@ -99,29 +123,29 @@ if __name__ == '__main__':
     <server_alias_opt>ServerAlias <server_alias>
     ServerAdmin <email>
 
-    <favicon_opt>Alias /favicon.ico /home/<user>/public_html/<url>/<git_dir>/static/<favicon>
+    <favicon_opt>Alias /favicon.ico /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static/<favicon>
 
-    Alias /media/ /home/<user>/public_html/<url>/<git_dir>/media/
-    Alias /static/ /home/<user>/public_html/<url>/<git_dir>/static/
+    Alias /media/ /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/media/
+    Alias /static/ /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static/
 
-    <Directory /home/<user>/public_html/<url>/<git_dir>/static>
+    <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static>
         <RequireAll>
             Require all granted
             Require env VALID_HOST
         </RequireAll>
     </Directory>
-    <Directory /home/<user>/public_html/<url>/<git_dir>/media>
+    <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/media>
         <RequireAll>
             Require all granted
             Require env VALID_HOST
         </RequireAll>
     </Directory>
 
-    WSGIScriptAlias / /home/<user>/public_html/<url>/<git_dir>/<proj_dir>/wsgi.py
+    WSGIScriptAlias / /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>/wsgi.py
     WSGIDaemonProcess <url> <wsgi_daemon_process>
     WSGIProcessGroup <url>
 
-    <Directory /home/<user>/public_html/<url>/<git_dir>/<proj_dir>>
+    <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>>
         <Files wsgi.py>
             <RequireAll>
                 Require all granted
@@ -166,11 +190,11 @@ if __name__ == '__main__':
 )
 
     python34_wsgi_daemon_process_template = '''\
-python-path=/home/<user>/public_html/<url>/<git_dir>:/home/<user>/public_html/<url>/<venv>/lib/python<python_ver>/site-packages\
+python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir>:/home/<user>/<url_dir>/<url>/<venv>/lib/python<python_ver>/site-packages\
 '''  # noqa E501
 
     python35_wsgi_daemon_process_template = '''\
-python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/public_html/<url>/<venv>\
+python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<user>/<url_dir>/<url>/<venv>\
 '''  # noqa E501
 
     if ssl == 'y' or ssl == 'yes':
@@ -294,11 +318,15 @@ python-path=/home/<user>/public_html/<url>/<git_dir> python-home=/home/<user>/pu
     ).replace(
         '<proj_dir>', proj_dir
     ).replace(
+        '<wsgi_dir>', wsgi_dir
+    ).replace(
         '<venv>', venv
     ).replace(
         '<python_ver>', python_ver
     ).replace(
         '<escaped_url>', url.replace('.', '\.')
+    ).replace(
+        '<url_dir>', url_dir
     )
 
     # print(conf)  # debug
