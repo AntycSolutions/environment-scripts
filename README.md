@@ -37,7 +37,7 @@ this should output that no renewals were attempted. We need to run renew every s
 add the following to your sudo crontab (`sudo crontab -e`):
 ```
 # Every Monday at 1:30 AM
-30 1 * * 1 service apache2 stop && mkdir -p /var/log/letsencrypt && /usr/bin/letsencrypt renew >> /var/log/letsencrypt/<domain>-renew.log && service apache2 start
+30 1 * * 1 service apache2 stop && /usr/bin/letsencrypt renew >> /var/log/letsencrypt/<domain>-renew.log && service apache2 start
 ```
 
 start web server (eg Apache):
