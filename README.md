@@ -19,7 +19,7 @@ install:
 stop web server (eg Apache):
 `service apache2 stop`
 
-run:
+run (replace <domain> / <subdomain>):
 `letsencrypt certonly --standalone -d <domain> -d <subdomain>`
 
 this should output the files to `/etc/letsencrypt/live/<domain>/`
@@ -34,10 +34,10 @@ run:
 
 this should output that no renewals were attempted. We need to run renew every so often to update our SSL certs
 
-add the following to your sudo crontab (`sudo crontab -e`):
+add the following to your sudo crontab (`sudo crontab -e`) (replace <domain>):
 ```
 # Every Monday at 1:30 AM
-30 1 * * 1 service apache2 stop && mkdir -p /var/log/letsencrypt && /usr/bin/letsencrypt renew >> /var/log/letsencrypt/<domain>-renew.log && service apache2 start
+30 1 * * 1 date >> /var/log/letsencrypt-renew/<domain>.log && /usr/sbin/service apache2 stop && /usr/bin/letsencrypt renew >> /var/log/letsencrypt-renew/<domain>.log 2>&1 && /usr/sbin/service apache2 start
 ```
 
 start web server (eg Apache):
