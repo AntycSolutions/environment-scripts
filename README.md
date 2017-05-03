@@ -19,7 +19,7 @@ install:
 stop web server (eg Apache):
 `service apache2 stop`
 
-run (replace <domain> / <subdomain>):
+run (replace <domain> / <subdomain>, can add multiple subdomains):
 `letsencrypt certonly --standalone -d <domain> -d <subdomain>`
 
 this should output the files to `/etc/letsencrypt/live/<domain>/`
