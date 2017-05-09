@@ -40,5 +40,8 @@ add the following to your sudo crontab (`sudo crontab -e`) (replace <domain>):
 30 1 * * 1 date >> /var/log/letsencrypt-renew/<domain>.log && /usr/sbin/service apache2 stop && /usr/bin/letsencrypt renew >> /var/log/letsencrypt-renew/<domain>.log 2>&1 && /usr/sbin/service apache2 start
 ```
 
+make sure you create the log folder
+`mkdir /var/log/letsencrypt-renew`
+
 start web server (eg Apache):
 `service apache2 start`
