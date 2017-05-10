@@ -22,7 +22,9 @@ stop web server (eg Apache):
 run (replace <domain> / <subdomain>, can add multiple subdomains):
 `letsencrypt certonly --standalone -d <domain> -d <subdomain>`
 
-this should output the files to `/etc/letsencrypt/live/<domain>/`
+this will ask you to provide an email for recovery and to agree to a TOS
+
+this should also output the files to `/etc/letsencrypt/live/<domain>/`
 
 `apache_config.py` will ask for the full path to the files for the following settings:
 `SSLCertificateFile` (fullchain.pem) / `SSLCertificateKeyFile` (privkey.pem)
