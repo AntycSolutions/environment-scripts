@@ -19,7 +19,7 @@ install:
 stop web server (eg Apache):
 `service apache2 stop`
 
-run (replace <domain> / <subdomain>, can add multiple subdomains):
+run (replace \<domain> / \<subdomain>, can add multiple subdomains):
 `letsencrypt certonly --standalone -d <domain> -d <subdomain>`
 
 this will ask you to provide an email for recovery and to agree to a TOS
