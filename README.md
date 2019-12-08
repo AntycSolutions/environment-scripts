@@ -14,13 +14,13 @@ follow instructions
 Let's Encrypt
 ===
 install:
-`apt-get install letsencrypt`
+`sudo apt install letsencrypt`
 
 stop web server (eg Apache):
-`service apache2 stop`
+`sudo service apache2 stop`
 
 run (replace <domain> / <subdomain>, can add multiple subdomains):
-`letsencrypt certonly --standalone -d <domain> -d <subdomain>`
+`sudo letsencrypt certonly --standalone -d <domain> -d <subdomain>`
 
 this will ask you to provide an email for recovery and to agree to a TOS
 
@@ -32,7 +32,7 @@ this should also output the files to `/etc/letsencrypt/live/<domain>/`
 once you've installed your site config test the SSL against https://www.ssllabs.com/ssltest/
 
 run:
-`letsencrypt renew`
+`sudo letsencrypt renew`
 
 this should output that no renewals were attempted. We need to run renew every so often to update our SSL certs
 
@@ -43,7 +43,7 @@ add the following to your sudo crontab (`sudo crontab -e`) (replace <domain>):
 ```
 
 make sure you create the log folder
-`mkdir /var/log/letsencrypt-renew`
+`sudo mkdir -p /var/log/letsencrypt-renew`
 
 start web server (eg Apache):
-`service apache2 start`
+`sudo service apache2 start`
