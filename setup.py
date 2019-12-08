@@ -13,7 +13,7 @@ setuptools.setup(
     version='0.1',  # major.minor[.patch]
     # packages=['utils'],
     # install_requires=['django'],
-    # include_package_data=True,
+    include_package_data=True,
     license='Apache',
     description='Environment scripts',
     long_description=README,
