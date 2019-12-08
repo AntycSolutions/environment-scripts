@@ -8,7 +8,7 @@ except ImportError:
     raise Exception('Create settings.py with sensitive settings defined')
 
 
-if __name__ == '__main__':
+def create_config():
     # args could be in an OrderedDict
     print('\n* Required args *\n')
 
@@ -337,3 +337,7 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
     f.close()
 
     print('\nCreated file: ' + filename)
+
+
+if __name__ == '__main__':
+    create_config()
