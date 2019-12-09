@@ -38,80 +38,82 @@ def create_config(
         print('url: ', end='')
         url = input()
         if not url:
-            exit('Enter an url')
+            raise Exception('Enter an url')
 
     if not git_dir:
         print('git_dir: ', end='')
         git_dir = input()
         if not git_dir:
-            exit('Enter a git_dir')
+            raise Exception('Enter a git_dir')
 
     print('\n* Optional args (leave blank to use defaults) *\n')
 
-    if not proj_dir:
-        print(
+    if not proj_dir and proj_dir is not False:
+        print((
             'proj_dir (containing Django proj) '
-            '(leave blank if your git_dir contains your Django proj): ',
-            end=''
-        )
+            '(leave blank if your git_dir contains your Django proj): '
+        ), end='')
         proj_dir = input()
 
-    if not wsgi_dir:
-        print(
-            (
-                'wsgi_dir (containing wsgi.py) (default is ' +
-                (proj_dir or git_dir) +
-                '): '
-            ),
-            end=''
-        )
+    default_wsgi_dir = proj_dir or git_dir
+    if not wsgi_dir and wsgi_dir is not False:
+        print((
+            'wsgi_dir (containing wsgi.py) (default is ' +
+            default_wsgi_dir +
+            '): '
+        ), end='')
         wsgi_dir = input()
-        if not wsgi_dir:
-            wsgi_dir = proj_dir or git_dir
+    if not wsgi_dir:
+        wsgi_dir = default_wsgi_dir
 
     # we can't put the / in the template because we need to support blank value
     if proj_dir:
         proj_dir = '/' + proj_dir
 
-    if not url_dir:
-        default_url_dir = 'public_html'
+    default_url_dir = 'public_html'
+    if not url_dir and url_dir is not False:
         print('url_dir (default is ' + default_url_dir + '): ', end='')
         url_dir = input()
-        if not url_dir:
-            url_dir = default_url_dir
+    if not url_dir:
+        url_dir = default_url_dir
 
-    if not venv:
-        print('venv (default is venv_' + wsgi_dir + '): ', end='')
+    default_venv = 'venv_' + wsgi_dir
+    if not venv and venv is not False:
+        print('venv (default is ' + default_venv + '): ', end='')
         venv = input()
-        if not venv:
-            venv = 'venv_' + wsgi_dir
+    if not venv:
+        venv = default_venv
 
-    if not user:
+    if not user and user is not False:
         print('user (default is ' + default_user + '): ', end='')
         user = input()
-        if not user:
-            user = default_user
+    if not user:
+        if not default_user:
+            raise Exception('user required')
+        user = default_user
 
     if not favicon and favicon is not False:
         print('favicon (leave blank to disable): ', end='')
         favicon = input()
 
-    if not python_ver:
-        default_python_ver = '3.5'
+    default_python_ver = '3.5'
+    if not python_ver and python_ver is not False:
         print('python_ver (default is ' + default_python_ver + '): ', end='')
         python_ver = input()
-        if not python_ver:
-            python_ver = default_python_ver
+    if not python_ver:
+        python_ver = default_python_ver
 
     if not server_alias and server_alias is not False:
         print('server_alias (leave blank to disable): ', end='')
         server_alias = input()
 
-    if not email:
+    if not email and email is not False:
         print('email (default is ' + default_email + '): ', end='')
         email = input()
-        if not email:
-            email = default_email
+    if not email:
+        if not default_email:
+            raise Exception('email required')
+        email = default_email
 
     if not ssl and ssl is not False:
         print('ssl (enter [y]es or leave blank to disable): ', end='')
