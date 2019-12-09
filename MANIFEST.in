@@ -1,2 +1,2 @@
 include README.md
-include apache_config.py
+include scripts *.py

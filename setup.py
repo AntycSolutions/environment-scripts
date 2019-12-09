@@ -11,7 +11,7 @@ os.chdir(path.normpath(path.join(path.abspath(__file__), os.pardir)))
 setuptools.setup(
     name='environment-scripts',
     version='0.1',  # major.minor[.patch]
-    # packages=['utils'],
+    packages=['scripts'],
     # install_requires=['django'],
     include_package_data=True,
     license='Apache',
