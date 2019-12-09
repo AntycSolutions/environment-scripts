@@ -4,8 +4,11 @@ from distutils import version
 
 try:
     import settings
+    default_user = settings.USER
+    default_email = settings.EMAIL
 except ImportError:
-    raise Exception('Create settings.py with sensitive settings defined')
+    default_user = ''
+    default_email = ''
 
 
 def create_config():
@@ -58,7 +61,6 @@ def create_config():
     if not venv:
         venv = 'venv_' + wsgi_dir
 
-    default_user = settings.USER
     print('user (default is ' + default_user + '): ', end='')
     user = input()
     if not user:
@@ -76,7 +78,6 @@ def create_config():
     print('server_alias (leave blank to disable): ', end='')
     server_alias = input()
 
-    default_email = settings.EMAIL
     print('email (default is ' + default_email + '): ', end='')
     email = input()
     if not email:
