@@ -11,105 +11,138 @@ except ImportError:
     default_email = ''
 
 
-def create_config():
+def create_config(
+    url=None,
+    git_dir=None,
+    proj_dir=None,
+    wsgi_dir=None,
+    url_dir=None,
+    venv=None,
+    user=None,
+    favicon=None,
+    python_ver=None,
+    server_alias=None,
+    email=None,
+    ssl=None,
+    ssl_certificate_file=None,
+    ssl_certificate_key_file=None,
+    server_alias_https=None,
+    hsts_domains=None,
+):
     # args could be in an OrderedDict
     print('\n* Required args *\n')
 
-    print('url: ', end='')
-    url = input()
     if not url:
-        exit('Enter an url')
+        print('url: ', end='')
+        url = input()
+        if not url:
+            exit('Enter an url')
 
-    print('git_dir: ', end='')
-    git_dir = input()
     if not git_dir:
-        exit('Enter a git_dir')
+        print('git_dir: ', end='')
+        git_dir = input()
+        if not git_dir:
+            exit('Enter a git_dir')
 
     print('\n* Optional args (leave blank to use defaults) *\n')
 
-    print(
-        'proj_dir (containing Django proj) '
-        '(leave blank if your git_dir contains your Django proj): ',
-        end=''
-    )
-    proj_dir = input()
+    if not proj_dir:
+        print(
+            'proj_dir (containing Django proj) '
+            '(leave blank if your git_dir contains your Django proj): ',
+            end=''
+        )
+        proj_dir = input()
 
-    print(
-        (
-            'wsgi_dir (containing wsgi.py) (default is ' +
-            (proj_dir or git_dir) +
-            '): '
-        ),
-        end=''
-    )
-    wsgi_dir = input()
     if not wsgi_dir:
-        wsgi_dir = proj_dir or git_dir
+        print(
+            (
+                'wsgi_dir (containing wsgi.py) (default is ' +
+                (proj_dir or git_dir) +
+                '): '
+            ),
+            end=''
+        )
+        wsgi_dir = input()
+        if not wsgi_dir:
+            wsgi_dir = proj_dir or git_dir
 
     # we can't put the / in the template because we need to support blank value
     if proj_dir:
         proj_dir = '/' + proj_dir
 
-    default_url_dir = 'public_html'
-    print('url_dir (default is ' + default_url_dir + '): ', end='')
-    url_dir = input()
     if not url_dir:
-        url_dir = default_url_dir
+        default_url_dir = 'public_html'
+        print('url_dir (default is ' + default_url_dir + '): ', end='')
+        url_dir = input()
+        if not url_dir:
+            url_dir = default_url_dir
 
-    print('venv (default is venv_' + wsgi_dir + '): ', end='')
-    venv = input()
     if not venv:
-        venv = 'venv_' + wsgi_dir
+        print('venv (default is venv_' + wsgi_dir + '): ', end='')
+        venv = input()
+        if not venv:
+            venv = 'venv_' + wsgi_dir
 
-    print('user (default is ' + default_user + '): ', end='')
-    user = input()
     if not user:
-        user = default_user
+        print('user (default is ' + default_user + '): ', end='')
+        user = input()
+        if not user:
+            user = default_user
 
-    print('favicon (leave blank to disable): ', end='')
-    favicon = input()
+    if not favicon and favicon is not False:
+        print('favicon (leave blank to disable): ', end='')
+        favicon = input()
 
-    default_python_ver = '3.5'
-    print('python_ver (default is ' + default_python_ver + '): ', end='')
-    python_ver = input()
     if not python_ver:
-        python_ver = default_python_ver
+        default_python_ver = '3.5'
+        print('python_ver (default is ' + default_python_ver + '): ', end='')
+        python_ver = input()
+        if not python_ver:
+            python_ver = default_python_ver
 
-    print('server_alias (leave blank to disable): ', end='')
-    server_alias = input()
+    if not server_alias and server_alias is not False:
+        print('server_alias (leave blank to disable): ', end='')
+        server_alias = input()
 
-    print('email (default is ' + default_email + '): ', end='')
-    email = input()
     if not email:
-        email = default_email
+        print('email (default is ' + default_email + '): ', end='')
+        email = input()
+        if not email:
+            email = default_email
 
-    print('ssl (enter [y]es or leave blank to disable): ', end='')
-    ssl = input().lower()
+    if not ssl and ssl is not False:
+        print('ssl (enter [y]es or leave blank to disable): ', end='')
+        ssl = input().lower()
 
-    if ssl == 'y' or ssl == 'yes':
+    if ssl in ['y', 'yes', True]:
         print('\n* Required ssl args *\n')
 
-        print('ssl_certificate_file (full path): ', end='')
-        ssl_certificate_file = input()
         if not ssl_certificate_file:
-            exit('Enter a ssl_certificate_file')
+            print('ssl_certificate_file (full path): ', end='')
+            ssl_certificate_file = input()
+            if not ssl_certificate_file:
+                exit('Enter a ssl_certificate_file')
 
-        print('ssl_certificate_key_file (full path): ', end='')
-        ssl_certificate_key_file = input()
         if not ssl_certificate_key_file:
-            exit('Enter a ssl_certificate_key_file')
+            print('ssl_certificate_key_file (full path): ', end='')
+            ssl_certificate_key_file = input()
+            if not ssl_certificate_key_file:
+                exit('Enter a ssl_certificate_key_file')
 
         print('\n* Optional ssl args (leave blank to use defaults) *\n')
 
-        if server_alias:
-            msg = 'default is ' + server_alias
-        else:
-            msg = 'leave blank to disable'
-        print('server_alias_https (' + msg + '): ', end='')
-        server_alias_https = input()
+        if not server_alias_https:
+            if server_alias:
+                msg = 'default is ' + server_alias
+            else:
+                msg = 'leave blank to disable'
+            print('server_alias_https (' + msg + '): ', end='')
+            server_alias_https = input()
 
-        print('hsts_domains (leave blank to disable): ', end='')
-        hsts_domains = input()
+        if not hsts_domains:
+            print('hsts_domains (leave blank to disable): ', end='')
+            hsts_domains = input()
 
     # Could be moved to a text file
     apache_template = '''\
@@ -198,7 +231,7 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir>:/home/<user>/<url_d
 python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<user>/<url_dir>/<url>/<venv>\
 '''  # noqa E501
 
-    if ssl == 'y' or ssl == 'yes':
+    if ssl in ['y', 'yes', True]:
         conf = apache_ssl_template
 
         conf = conf.replace(
