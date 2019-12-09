@@ -1,2 +1,2 @@
 include README.md
-include scripts *.py
+include environment_scripts *.py
