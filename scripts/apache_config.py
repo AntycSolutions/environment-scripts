@@ -28,6 +28,8 @@ def create_config(
     ssl_certificate_key_file=None,
     server_alias_https=None,
     hsts_domains=None,
+    filename=None,
+    create_file=True,
 ):
     # args could be in an OrderedDict
     print('\n* Required args *\n')
@@ -132,7 +134,7 @@ def create_config(
 
         print('\n* Optional ssl args (leave blank to use defaults) *\n')
 
-        if not server_alias_https:
+        if not server_alias_https and server_alias_https is not False:
             if server_alias:
                 msg = 'default is ' + server_alias
             else:
@@ -140,7 +142,7 @@ def create_config(
             print('server_alias_https (' + msg + '): ', end='')
             server_alias_https = input()
 
-        if not hsts_domains:
+        if not hsts_domains and hsts_domains is not False:
             print('hsts_domains (leave blank to disable): ', end='')
             hsts_domains = input()
 
@@ -365,12 +367,15 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
 
     # print(conf)  # debug
 
-    filename = url + '.conf'
-    f = open(filename, 'w')
-    f.write(conf)
-    f.close()
+    if create_file:
+        if not filename:
+            filename = url + '.conf'
+        f = open(filename, 'w')
+        f.write(conf)
+        f.close()
+        print('\nCreated file: ' + filename)
 
-    print('\nCreated file: ' + filename)
+    return conf
 
 
 if __name__ == '__main__':
