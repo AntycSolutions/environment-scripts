@@ -10,7 +10,7 @@ os.chdir(path.normpath(path.join(path.abspath(__file__), os.pardir)))
 
 setuptools.setup(
     name='environment-scripts',
-    version='0.1',  # major.minor[.patch]
+    version='0.2',  # major.minor[.patch]
     packages=['environment_scripts'],
     # install_requires=['django'],
     include_package_data=True,

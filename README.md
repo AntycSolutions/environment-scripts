@@ -36,10 +36,10 @@ run:
 
 this should output that no renewals were attempted. We need to run renew every so often to update our SSL certs
 
-add the following to your sudo crontab (`sudo crontab -e`) (replace <domain>):
+add the following to your sudo crontab (`sudo crontab -e`):
 ```
 # Every Monday at 1:30 AM
-30 1 * * 1 date >> /var/log/letsencrypt-renew/<domain>.log && /usr/sbin/service apache2 stop && /usr/bin/letsencrypt renew >> /var/log/letsencrypt-renew/<domain>.log 2>&1 && /usr/sbin/service apache2 start
+30 1 * * 1 /path/to/letsencrypt_renew.sh >> /var/log/letsencrypt-renew/renew.log 2>&1
 ```
 
 make sure you create the log folder
