@@ -10,9 +10,9 @@ os.chdir(path.normpath(path.join(path.abspath(__file__), os.pardir)))
 
 setuptools.setup(
     name='environment-scripts',
-    version='0.2',  # major.minor[.patch]
+    version='0.3',  # major.minor[.patch]
     packages=['environment_scripts'],
-    # install_requires=['django'],
+    scripts=['bin/letsencrypt_renew.sh'],
     include_package_data=True,
     license='Apache',
     description='Environment scripts',
