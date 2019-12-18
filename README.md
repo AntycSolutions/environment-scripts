@@ -36,6 +36,11 @@ run:
 
 this should output that no renewals were attempted. We need to run renew every so often to update our SSL certs
 
+run:
+`pip install git+https://github.com/Solanar/environment-scripts`
+activate virtualenv
+`which letsencrypt_renew.sh`
+
 add the following to your sudo crontab (`sudo crontab -e`):
 ```
 # Every Monday at 1:30 AM
