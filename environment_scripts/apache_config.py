@@ -20,6 +20,7 @@ def create_config(
     venv=None,
     user=None,
     favicon=None,
+    robots=None,
     python_ver=None,
     server_alias=None,
     email=None,
@@ -96,6 +97,10 @@ def create_config(
         print('favicon (leave blank to disable): ', end='')
         favicon = input()
 
+    if not robots and robots is not False:
+        print('robots (leave blank to disable): ', end='')
+        robots = input()
+
     default_python_ver = '3.5'
     if not python_ver and python_ver is not False:
         print('python_ver (default is ' + default_python_ver + '): ', end='')
@@ -150,7 +155,12 @@ def create_config(
 
     # Could be moved to a text file
     apache_template = '''\
+WSGIRestrictEmbedded On
+WSGIPythonOptimize 1
+
 <VirtualHost *:80>
+    RequestReadTimeout header=15-30,MinRate=500 body=15,MinRate=500
+
     # MIME-Type sniffing
     Header set X-Content-Type-Options: nosniff
 
@@ -162,33 +172,39 @@ def create_config(
     ServerAdmin <email>
 
     <favicon_opt>Alias /favicon.ico /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static/<favicon>
+    <robots_opt>Alias /robots.txt /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static/<robots>
 
     Alias /media/ /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/media/
     Alias /static/ /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static/
 
     <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/static>
-        <RequireAll>
-            Require all granted
-            Require env VALID_HOST
-        </RequireAll>
+        Require env VALID_HOST
     </Directory>
     <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/media>
-        <RequireAll>
-            Require all granted
-            Require env VALID_HOST
-        </RequireAll>
+        Require env VALID_HOST
     </Directory>
 
     WSGIScriptAlias / /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>/wsgi.py
-    WSGIDaemonProcess <url> <wsgi_daemon_process>
+    WSGIDaemonProcess <url> \
+        display-name='%{GROUP}' \
+        # processes=? \
+        # threads=? \
+        queue-timeout=45 \
+        socket-timeout=30 \
+        response-socket-timeout=60 \
+        request-timeout=60 \
+        inactivity-timeout=0 \
+        startup-timeout=45 \
+        deadlock-timeout=60 \
+        graceful-timeout=15 \
+        eviction-timeout=0 \
+        <wsgi_daemon_process>
     WSGIProcessGroup <url>
+    WSGIApplicationGroup %{GLOBAL}
 
     <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>>
         <Files wsgi.py>
-            <RequireAll>
-                Require all granted
-                Require env VALID_HOST
-            </RequireAll>
+            Require env VALID_HOST
         </Files>
     </Directory>
 </Virtualhost>
@@ -205,6 +221,9 @@ def create_config(
 </VirtualHost>
 
 <VirtualHost *:443>
+    # http2
+    Protocols h2 h2c http/1.1
+
     # SSL
     SSLEngine on
 
@@ -336,6 +355,15 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
     else:
         conf = conf.replace('<favicon_opt>', '#')
 
+    if robots:
+        conf = conf.replace(
+            '<robots>', robots
+        ).replace(
+            '<robots_opt>', ''
+        )
+    else:
+        conf = conf.replace('<robots_opt>', '#')
+
     if version.LooseVersion(python_ver) >= version.LooseVersion('3.5'):
         conf = conf.replace(
             '<wsgi_daemon_process>', python35_wsgi_daemon_process_template
@@ -376,6 +404,36 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
         f.write(conf)
         f.close()
         print('\nCreated file: ' + filename)
+
+    print('List apache mods:')
+    print('sudo a2query -m | sort')
+    print(
+        'Required mods:',
+        'alias',
+        'authz_core',
+        'authz_host',
+        'deflate',
+        'dir',
+        'filter',
+        'mime',
+        'mpm_event (or equivalent)',
+        'reqtimeout',
+        'setenvif',
+        'status',
+        'wsgi',
+    )
+    print('Required proxy mods:', 'proxy', 'proxy_http')
+    print('Required ssl mods:', 'ssl', 'http2', 'headers', 'rewrite')
+    print('Required letsencrypt mods:', 'cgid', 'socache_shmcb')
+    print('Common mods to disable:')
+    print('sudo a2dismod access_compat')
+    print('sudo a2dismod auth_basic')
+    print('sudo a2dismod authn_core')
+    print('sudo a2dismod authn_file')
+    print('sudo a2dismod authz_user')
+    print('sudo a2dismod autoindex')
+    print('sudo a2dismod env')
+    print('sudo a2dismod negotiation')
 
     return conf
 
