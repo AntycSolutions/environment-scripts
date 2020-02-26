@@ -425,7 +425,6 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
         'reqtimeout',
         'setenvif',
         'status',
-        'wsgi',
     )
     print('Required proxy mods:', 'proxy', 'proxy_http')
     print('Required ssl mods:', 'ssl', 'http2', 'headers', 'rewrite')
