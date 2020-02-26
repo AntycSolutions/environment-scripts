@@ -184,6 +184,8 @@ WSGIPythonOptimize 1
         Require env VALID_HOST
     </Directory>
 
+    LoadModule wsgi_module \
+        /home/<user>/<url_dir>/<url>/<venv>/lib/python<python_ver>/site-packages/mod_wsgi/server/mod_wsgi-py<py_ver_no_dot>.cpython-<py_ver_no_dor>m-x86_64-linux-gnu.so
     WSGIScriptAlias / /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>/wsgi.py
     WSGIDaemonProcess <url> \
         display-name='%{GROUP}' \
@@ -200,6 +202,7 @@ WSGIPythonOptimize 1
         eviction-timeout=0 \
         <wsgi_daemon_process>
     WSGIProcessGroup <url>
+    # change if running different py apps
     WSGIApplicationGroup %{GLOBAL}
 
     <Directory /home/<user>/<url_dir>/<url>/<git_dir><proj_dir>/<wsgi_dir>>
@@ -393,6 +396,8 @@ python-path=/home/<user>/<url_dir>/<url>/<git_dir><proj_dir> python-home=/home/<
         '<escaped_url>', url.replace('.', '\.')
     ).replace(
         '<url_dir>', url_dir
+    ).replace(
+        '<py_ver_no_dot>', python_ver.replace('.', '')
     )
 
     # print(conf)  # debug
